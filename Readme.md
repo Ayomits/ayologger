@@ -13,7 +13,7 @@ A customizable, extensible, and lightweight logging library for Node.js.
 - **Custom Log Level Names**: Personalize log level names for better readability.
 - **Flexible Formatting**: Set custom date format and base color for logs.
 
-> This module required ES6 Syntax in your project
+> This module requires ES6 Syntax in your project
 > In package.json set "type": "module"
 
 ## Installation
