@@ -183,6 +183,22 @@ logger.success("Custom achievement log.");
 logger.debug("Custom trace log.");
 ```
 
+## Custom Templates
+Variables:
+`level` - using for display log level
+`date` - using for display when this log was printed
+`message` - using for display content from function parametr
+
+Example:
+```ts
+const logger = new Logger({
+    templates: {
+        info: () => `{date} {level} with {message}`
+    }
+})
+logger.info("Hello my custom template!")
+```
+
 ## Conclusion
 
 `ayologger` provides a powerful and flexible logging system for Node.js. With customizable themes, templates, and formatting, you can make your log output as unique as your application. Whether you need simple log messages or complex structured output, `ayologger` can be tailored to meet your needs.
