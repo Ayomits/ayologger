@@ -1,10 +1,8 @@
-import chalk from "chalk";
+import { Chalk } from "chalk";
 import moment from "moment";
-import { TemplateResolver } from "Templates";
+import { TemplateResolver } from "./Templates";
 
-/**
- * Interface for the Logger class methods.
- */
+// Interface defining logger methods
 export interface ILogger {
     info: (...content: unknown[]) => void;
     warn: (...content: unknown[]) => void;
@@ -13,45 +11,33 @@ export interface ILogger {
     debug: (...content: unknown[]) => void;
 }
 
-/**
- * Represents color configuration for individual log parts.
- */
+// Interface defining the color scheme for logger themes
 export interface ILoggerThemeColor {
-    text?: string;
-    background?: string | null;
+    text?: string; // Text color
+    background?: string | null; // Background color
 }
 
-/**
- * Defines the theme configuration for different log components.
- */
+// Interface for theming different parts of the log output
 export interface ILoggerTheme {
-    message?: ILoggerThemeColor;
-    level?: ILoggerThemeColor;
-    date?: ILoggerThemeColor;
+    message?: ILoggerThemeColor; // Theme for the log message
+    level?: ILoggerThemeColor; // Theme for the log level
+    date?: ILoggerThemeColor; // Theme for the timestamp
 }
 
-/**
- * Logger template function type.
- */
+// Type for defining logger templates
 export type TLoggerTemplate = () => string;
 
-/**
- * Logger configuration options.
- */
+// Interface for logger options, including global theme, specific themes, and formatting
 export interface ILoggerOptions {
-    global?: ILoggerTheme;
-    theme?: Partial<Record<TLogLevel, ILoggerTheme>>;
+    global?: ILoggerTheme; // Global theme applied to all logs
+    theme?: Partial<Record<TLogLevel, ILoggerTheme>>; // Per-log-level themes
     formatting?: {
-        dateFormat?: string;
-        baseColor?: string; // New option for base text color
+        dateFormat?: string; // Custom date format
     };
-    templates?: Partial<Record<TLogLevel, TLoggerTemplate>>;
-    logNames?: Partial<Record<TLogLevel, string>>;
+    templates?: Partial<Record<TLogLevel, TLoggerTemplate>>; // Custom templates for log messages
 }
 
-/**
- * Enum for log levels.
- */
+// Enum for log level types
 export enum LogLevelType {
     INFO = "INFO",
     SUCCESS = "SUCCESS",
@@ -60,51 +46,37 @@ export enum LogLevelType {
     DEBUG = "DEBUG",
 }
 
-/**
- * Log level type as a string.
- */
+// Type for log levels as string keys
 export type TLogLevel = "info" | "success" | "error" | "warn" | "debug";
 
-/**
- * Default constant values for logger configuration.
- */
+// Default constants for logger colors and templates
 export enum DefaultOptionConstants {
     FUNCTION_CLASS_NAMES = "#a3cdff",
     TEXT_COLOR = "#e9eef7",
-    MESSAGE_COLOR = "#83ff75",
     DATE_COLOR = "#ff9d5c",
     INFO_BACKGROUND = "#72a1f7",
     WARN_BACKGROUND = "#ffeb8a",
     ERROR_BACKGROUND = "#ff2e3f",
     SUCCESS_BACKGROUND = "#68fc68",
     DEBUG_BACKGROUND = "#ff8cf2",
-    BASE_TEMPLATE = "{level} | {date} | {message}",
+    BASE_TEMPLATE = "{level}  | {date} | {message}",
 }
 
-/**
- * Logger implementation with customizable templates, colors, and formats.
- */
+// Main Logger class implementing the ILogger interface
 export class Logger implements ILogger {
-    private options: ILoggerOptions;
+    private options: ILoggerOptions; // Logger configuration options
 
-    /**
-     * Constructs a Logger instance with optional configuration.
-     * @param options Configuration options for the Logger.
-     */
     constructor(options?: ILoggerOptions) {
-        this.options = { ...this.defaultSettings(), ...options };
+        this.options = { ...this.defaultSettings(), ...options }; // Merge default settings with custom options
     }
 
-    /**
-     * Returns default logger settings.
-     * @returns Default ILoggerOptions object.
-     */
+    // Define default logger settings
     private defaultSettings(): ILoggerOptions {
         return {
             global: {
                 level: { text: DefaultOptionConstants.TEXT_COLOR },
-                message: { text: DefaultOptionConstants.MESSAGE_COLOR },
-                date: { text: DefaultOptionConstants.DATE_COLOR },
+                message: { text: DefaultOptionConstants.TEXT_COLOR },
+                date: { text: DefaultOptionConstants.TEXT_COLOR },
             },
             theme: {
                 info: {
@@ -133,10 +105,6 @@ export class Logger implements ILogger {
                     },
                 },
             },
-            formatting: {
-                dateFormat: "D MMM YYYY HH:mm:ss",
-                baseColor: DefaultOptionConstants.TEXT_COLOR,
-            },
             templates: {
                 info: () => DefaultOptionConstants.BASE_TEMPLATE,
                 warn: () => DefaultOptionConstants.BASE_TEMPLATE,
@@ -147,28 +115,20 @@ export class Logger implements ILogger {
         };
     }
 
-    /**
-     * Universal log function for all log levels.
-     * @param level The log level.
-     * @param content The log content.
-     */
-    private universalLog(level: LogLevelType | TLogLevel, ...content: unknown[]): void {
-        const { theme, global, templates, formatting } = this.options;
+    // Generic method for handling log output
+    private universalLog(level: LogLevelType, ...content: unknown[]): void {
+        const { theme, global, templates } = this.options;
 
+        // Get the theme for the current log level
         const themeSet =
             theme?.[level.toLowerCase() as keyof ILoggerOptions["theme"]] ||
-            ({} as ILoggerTheme);
+            ({} as any);
 
+        // Apply themes to log components
         const logLevel = this.applyTheme(
             themeSet.level,
             global?.level
-        )(
-            ` ${
-                this.options.logNames?.[
-                    level as keyof ILoggerOptions["logNames"]
-                ] || level
-            } `
-        );
+        )(` ${level} `);
         const logDate = this.applyTheme(
             themeSet.date,
             global?.date
@@ -178,6 +138,7 @@ export class Logger implements ILogger {
             global?.message
         )(content.join(" "));
 
+        // Resolve the template for the log message
         const templateFunc = templates?.[
             level.toLowerCase() as keyof ILoggerOptions["templates"]
         ] as unknown as TLoggerTemplate;
@@ -185,12 +146,9 @@ export class Logger implements ILogger {
             ? templateFunc()
             : DefaultOptionConstants.BASE_TEMPLATE;
 
-        const baseColor =
-            formatting?.baseColor || DefaultOptionConstants.TEXT_COLOR;
-        const coloredTemplate = chalk.hex(baseColor.toUpperCase())(templateStr);
-
+        // Output the log message to the console
         console.log(
-            TemplateResolver.resolveTempalate(coloredTemplate, {
+            TemplateResolver.resolveTempalate(templateStr, {
                 level: logLevel,
                 date: logDate,
                 message: logMessage,
@@ -198,34 +156,30 @@ export class Logger implements ILogger {
         );
     }
 
-    /**
-     * Applies theme styles to log parts.
-     * @param local Local theme configuration.
-     * @param global Global theme configuration.
-     * @returns A styled Chalk instance.
-     */
+    // Apply theming for text and background colors
     private applyTheme(
         local: ILoggerThemeColor = {},
         global: ILoggerThemeColor = {}
     ) {
-        let styled = chalk;
         const { text, background } = { ...global, ...local };
-        if (background) styled = styled.bgHex(background.toUpperCase());
-        if (text) styled = styled.hex(text.toUpperCase());
-
+        let styled = new Chalk({ level: 3 }); // Initialize Chalk with support for colors
+        if (text) {
+            styled = styled.hex(text.toUpperCase());
+        }
+        if (background) {
+            styled = styled.bgHex(background);
+        }
         return styled;
     }
 
-    /**
-     * Returns the current date in the configured format.
-     * @returns Formatted date string.
-     */
+    // Get the current date in the specified format
     private getDate(): string {
         const format =
             this.options.formatting?.dateFormat || "D MMM YYYY HH:mm:ss";
         return moment().format(format);
     }
 
+    // Specific log methods for different log levels
     info(...content: unknown[]): void {
         this.universalLog(LogLevelType.INFO, ...content);
     }
