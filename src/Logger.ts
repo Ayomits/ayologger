@@ -29,6 +29,7 @@ export type TLoggerTemplate = () => string;
 
 // Interface for logger options, including global theme, specific themes, and formatting
 export interface ILoggerOptions {
+    noBackground?: boolean;
     global?: ILoggerTheme; // Global theme applied to all logs
     theme?: Partial<Record<TLogLevel, ILoggerTheme>>; // Per-log-level themes
     formatting?: {
@@ -166,7 +167,7 @@ export class Logger implements ILogger {
         if (text) {
             styled = styled.hex(text.toUpperCase());
         }
-        if (background) {
+        if (background && !this.options.noBackground) {
             styled = styled.bgHex(background);
         }
         return styled;
