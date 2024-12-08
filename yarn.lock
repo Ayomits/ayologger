@@ -113,7 +113,7 @@ available-typed-arrays@^1.0.7:
     possible-typed-array-names "^1.0.0"
 
 "ayologger@file:":
-  version "0.0.2"
+  version "0.0.3"
   resolved "file:"
   dependencies:
     ansi-colors "^4.1.3"
