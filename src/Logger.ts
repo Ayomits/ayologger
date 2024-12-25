@@ -1,6 +1,6 @@
-import { Chalk } from "chalk";
 import moment from "moment";
 import { TemplateResolver } from "./Templates";
+import chalk from "chalk";
 
 // Interface defining logger methods
 export interface ILogger {
@@ -163,7 +163,7 @@ export class Logger implements ILogger {
         global: ILoggerThemeColor = {}
     ) {
         const { text, background } = { ...global, ...local };
-        let styled = new Chalk({ level: 3 }); // Initialize Chalk with support for colors
+        let styled = new chalk.Instance({ level: 3 }); // Initialize Chalk with support for colors
         if (text) {
             styled = styled.hex(text.toUpperCase());
         }
